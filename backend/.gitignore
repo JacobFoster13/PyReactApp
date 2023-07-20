@@ -1,3 +1,4 @@
 /venv
 .flaskenv
 flaskenv
+__pycache__
