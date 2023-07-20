@@ -2,3 +2,4 @@
 .flaskenv
 flaskenv
 __pycache__
+.env
