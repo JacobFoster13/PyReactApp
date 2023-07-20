@@ -1,7 +1,7 @@
 import pymongo
 
 # establish connection and create database
-client = pymongo.MongoClient("mongodb://localhost:27017")
+client = pymongo.MongoClient("mongodb+srv://jacob13:jacobapad@cluster0.5hlginn.mongodb.net/?retryWrites=true&w=majority")
 db = client['pythonTest']
 
 # input user data to users collection
