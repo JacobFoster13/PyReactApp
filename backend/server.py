@@ -4,9 +4,14 @@ from flask import Flask, request
 import json
 from flask_cors import CORS
 import pymongo
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+DB_STRING = os.getenv("DB_STRING")
 
 app = Flask(__name__)
-client = pymongo.MongoClient('mongodb://localhost:27017')
+client = pymongo.MongoClient(DB_STRING)
 db = client['pythonTest']
 CORS(app)
 
