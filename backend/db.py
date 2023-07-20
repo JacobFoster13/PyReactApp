@@ -1,7 +1,12 @@
 import pymongo
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+DB_STRING = os.getenv("DB_STRING")
 
 # establish connection and create database
-client = pymongo.MongoClient("mongodb+srv://jacob13:jacobapad@cluster0.5hlginn.mongodb.net/?retryWrites=true&w=majority")
+client = pymongo.MongoClient(DB_STRING)
 db = client['pythonTest']
 
 # input user data to users collection
