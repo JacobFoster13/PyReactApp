@@ -6,16 +6,19 @@ import axios from 'axios';
 
 const Dashboard = () => {
     let { state } = useLocation();
-    // let username = state.userId;
     
     const [projName, setProjName] = useState('');
     const [projDesc, setProjDesc] = useState('');
+
     const [open, setOpen] = React.useState(false);
     const [openJoin, setOpenJoin] = useState(false);
+
     const [projects, setProjects] = useState([])
     const [userProjects, setUserProjects] = useState([])
+
     const [projToJoin, setProjToJoin] = useState(null)
-    const projJoin = new Set();
+    const [seeProj, setSeeProj] = useState(false)
+    const [res, setRes] = useState(0);
 
     const handleOpen = () => setOpen(true);
     const handleOpenJoin = () => {setOpenJoin(true)}
@@ -29,12 +32,15 @@ const Dashboard = () => {
         setOpenJoin(false)
     }
 
+    // FINDING A PROJECT BASED ON INPUT
     const handleSubmit = (e) => {
         e.preventDefault()
-        projJoin.add(projToJoin)
-        console.log(projJoin)
+        setSeeProj(true)
+        let res = projects.find((p) => p._id === parseInt(projToJoin))
+        setRes(res)
     }
 
+    // CREATE PROJECT
     const handleConfirm = () => {
         axios.post('/projects', {
             user: state.userId,
@@ -42,13 +48,20 @@ const Dashboard = () => {
             desc: projDesc
         })
         .then((response) => {
-            console.log(response.data)
+            if (response.status === 200) {
+                alert("Project successfully created!")
+            }
         })
-        console.log(`Project Name: ${projName}\nProject Desc: ${projDesc}`)
         setOpen(false)
+        window.location.reload(false)
     }
+
+    // CONFIRMING PROJECT JOIN
     const handleConfirmJoin = () => {
         console.log('confirmed')
+        setSeeProj(false)
+        setOpenJoin(false)
+        window.location.reload(false)
     }
 
     const style = {
@@ -64,7 +77,7 @@ const Dashboard = () => {
       };
 
     useEffect(() => {
-        // if (state.userId) {
+        if (state !== null) {
             axios.get("http://localhost:5000/projects", {
                 params: {
                 userId: state.userId
@@ -72,19 +85,63 @@ const Dashboard = () => {
             })
             .then((response) => {
                 if (response.status === 200) {
-                    // console.log(response.data)
                     setProjects(response.data.allProj)
                     setUserProjects(response.data.userProj)
                 }
             })
-        // }
-    }, [state.userId])
+        }
+    }, [state])
+
+    // ACTUALLY JOINING A PROJECT
+    const joinProj = () => {
+        if (state !== null) {
+            axios.post('/joinproject/', {
+                user: state.userId,
+                project: res._id
+            })
+            .then((response) => {
+                if (response.status === 200) {
+                    alert("You have successfully joined project", res._id)
+                }
+            })
+        }
+    }
+
+    // DYNAMIC REACT COMPONENTS
+    const Name = () => {
+        if (state !== null) {
+            return <span>{state.userId}</span>
+        }
+    }
+
+    const ProjJoin = (props) => {
+        if (props.hidden) {
+            return (
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{res._id}</td>
+                            <td>{res.name}</td>
+                            <td><button onClick={joinProj}>Join Project</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            )
+        }
+    }
 
     return (
         <>
-        {state.userId !== null ? 
+        {state !== null ? 
             <>
-                <h1>Welcome to the Dashboard, {state.userId}!</h1>
+                <h1>Welcome to the Dashboard, <Name />!</h1>
                 <hr />
                 <Button variant="contained" onClick={handleOpen}>Create New Project</Button>
                 <Button 
@@ -153,6 +210,9 @@ const Dashboard = () => {
                                         <SearchIcon style={{fill: 'blue'}} />
                                     </IconButton>
                                 </form>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <ProjJoin hidden={seeProj}/>
                             </Grid>
                             <Grid item xs={2}>
                                 <Button variant="contained" onClick={handleConfirmJoin}>Done</Button>
