@@ -12,8 +12,8 @@ db = client['pythonTest']
 # input user data to users collection
 user_col = db['users']
 users = [
-    {'_id': 'jf123', 'fname': 'Jacob', 'lname': 'Foster', 'email': 'jacob@jacob.com', 'password': 'password', 'projects': []},
-    {'_id': 'ev123', 'fname': 'Enrique', 'lname': 'Villarreal', 'email': 'erique@enrique.com', 'password': 'password', 'projects': []},
+    {'_id': 'jf123', 'fname': 'Jacob', 'lname': 'Foster', 'email': 'jacob@jacob.com', 'password': 'password', 'projects': [1]},
+    {'_id': 'ev123', 'fname': 'Enrique', 'lname': 'Villarreal', 'email': 'enrique@enrique.com', 'password': 'password', 'projects': []},
     {'_id': 'sg123', 'fname': 'Srishti', 'lname': 'Gupta', 'email': 'srishti@srishti.com', 'password': 'password', 'projects': []},
     {'_id': 'ab123', 'fname': 'Aishwarya', 'lname': 'Bhosle', 'email': 'aishwarya@aishwarya.com', 'password': 'password', 'projects': []},
     {'_id': 'sy123', 'fname': 'Suhas', 'lname': 'Yogish', 'email': 'suhas@suhas.com', 'password': 'password', 'projects': []}

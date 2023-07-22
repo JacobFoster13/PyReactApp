@@ -63,7 +63,7 @@ def projects():
     if request.method == 'GET':
         args = request.args
         user = args.get('userId')
-        user_spec = db.projects.find({'users': [str(user)]})
+        user_spec = db.projects.find({'users': str(user)})
         all_proj = db.projects.find()
         return json.dumps({
             'userProj': [p for p in user_spec],
@@ -83,8 +83,18 @@ def projects():
             "creator": user,
             "hardware": []
         }
+        db.users.update_one({"_id": str(user)}, {"$push": {"projects": next_id}})
         db.projects.insert_one(new_proj)
         return json.dumps({"message": "Success"}, indent=4)
+
+@app.route('/joinproject/', methods=['POST'])
+def join_project():
+    if request.method == 'POST':
+        join = dict(request.get_json())
+        user, project = join['user'], join['project']
+        db.users.update_one({"_id": str(user)}, {"$push": {"projects": project}})
+        db.projects.update_one({"_id": project}, {"$push": {"users": str(user)}})
+        return "Success"
 
 @app.route("/hardware/", methods=['GET', 'POST'])
 def hardware():
