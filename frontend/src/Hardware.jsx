@@ -32,7 +32,8 @@ const Hardware = () => {
             // request more resources
             if (Object.keys(req).length > 0) {
                 axios.post('/hardware/', {
-                    hwReq: req
+                    hwReq: req,
+                    project: state.project
                 })
                 .then((response) => {
                     console.log(response.data)
@@ -46,7 +47,8 @@ const Hardware = () => {
             // return resources
             if (Object.keys(ret).length > 0) {
                 axios.post("/hardwareReturn/", {
-                    hwReturn: ret
+                    hwReturn: ret,
+                    project: state.project
                 })
                 .then((response) => {
                     if (response.data !== 'True') {
@@ -66,57 +68,67 @@ const Hardware = () => {
             })
     }, []);
 
+    const Project = () => {
+        return (
+            <span>{state.project}</span>
+        )
+    }
+
   return (
-    <div>
-        <h1>Manage Resources for Project {state.project}</h1>
-        <br />
-        <Grid container spacing={2}>
-            <Grid item xs={2}>
-                <Typography><strong>HW Set Name</strong></Typography>
-            </Grid>
-            <Grid item xs={2}>
-                <Typography><strong>Capacity</strong></Typography>
-            </Grid>
-            <Grid item xs={2}>
-                <Typography><strong>Availability</strong></Typography>
-            </Grid>
-            <Grid item xs={3}>
-                <Typography><strong>Request Hardware</strong></Typography>
-            </Grid>
-            <Grid item xs={3}>
-                <Typography><strong>Return Hardware</strong></Typography>
-            </Grid>
-        </Grid>
-        <hr />
-        {data.map((h) => (
-            <Grid key={h._id} style={{marginBottom: '1%'}} direction='row' alignItems='center' alignContent='center' container spacing={2}>
+    <>
+        {state !== null ? 
+        <div>
+            <h1>Manage Resources for Project <Project /></h1>
+            <br />
+            <Grid container spacing={2}>
                 <Grid item xs={2}>
-                    <Typography>{h.name}</Typography>
+                    <Typography><strong>HW Set Name</strong></Typography>
                 </Grid>
                 <Grid item xs={2}>
-                    <Typography>{h.capacity}</Typography>
+                    <Typography><strong>Capacity</strong></Typography>
                 </Grid>
                 <Grid item xs={2}>
-                    <Typography>{h.capacity - h.checkedOut}</Typography>
+                    <Typography><strong>Availability</strong></Typography>
                 </Grid>
                 <Grid item xs={3}>
-                    <TextField 
-                        type='number' 
-                        onChange={e => handleRequest(e, h._id, 'request')}
-                        inputProps={{min: 0}} 
-                        label="Request Hardware" />
+                    <Typography><strong>Request Hardware</strong></Typography>
                 </Grid>
                 <Grid item xs={3}>
-                    <TextField 
-                        type='number' 
-                        onChange={e => handleRequest(e, h._id, 'return')}
-                        inputProps={{min: 0}} 
-                        label="Return Hardware" />
+                    <Typography><strong>Return Hardware</strong></Typography>
                 </Grid>
             </Grid>
-        ))}
-        <Button variant='contained' onClick={handleConfirm}>Confirm Request</Button>
-    </div>
+            <hr />
+            {data.map((h) => (
+                <Grid key={h._id} style={{marginBottom: '1%'}} direction='row' alignItems='center' alignContent='center' container spacing={2}>
+                    <Grid item xs={2}>
+                        <Typography>{h.name}</Typography>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Typography>{h.capacity}</Typography>
+                    </Grid>
+                    <Grid item xs={2}>
+                        <Typography>{h.capacity - h.checkedOut}</Typography>
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            type='number' 
+                            onChange={e => handleRequest(e, h._id, 'request')}
+                            inputProps={{min: 0}} 
+                            label="Request Hardware" />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            type='number' 
+                            onChange={e => handleRequest(e, h._id, 'return')}
+                            inputProps={{min: 0}} 
+                            label="Return Hardware" />
+                    </Grid>
+                </Grid>
+            ))}
+            <Button variant='contained' onClick={handleConfirm}>Confirm Request</Button>
+        </div> :
+        "Please Log In"}
+    </>
   )
 }
 
