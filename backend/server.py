@@ -2,168 +2,248 @@
 
 from flask import Flask, request
 import json
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 import pymongo
 from dotenv import load_dotenv
 import os
+import passwordEncrypt
+import certifi
+
+ca=certifi.where()
 
 load_dotenv()
 DB_STRING = os.getenv("DB_STRING")
 
 app = Flask(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
-client = pymongo.MongoClient(DB_STRING)
-db = client['jacobTest']
+client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
+db = client['pythonTest']
 CORS(app)
 
-# DELETE
-@app.route("/users/", methods=['GET'])
-@cross_origin()
-def users():
-    query_res = db.users.find()
-    res = []
-    for qr in query_res:
-        res.append(qr)
-
-    return json.dumps(res, indent=4)
+def return_json(message):
+    return json.dumps({"Message": str(message)}, indent=4)
 
 @app.route("/login/", methods=["POST"])
-@cross_origin()
 def login():
     if request.method == 'POST':
-        attempt = dict(request.get_json())
-        user_id, password = attempt['userId'], attempt['password']
-        try:
-            user = next(db.users.find({'_id': user_id}))
-            if user['password'] == password:
-                return json.dumps({'message': 'ConfirmKey'}, indent=4)
-        except:
-            return 'Access Denied'
-    return "Only POST Requests allowed"
 
-@app.route("/signup/", methods=['POST'])
-@cross_origin()
+        data = request.get_json()
+        params = data['params']
+        user = params.get('user')
+        password = params.get('password')
+
+        try:
+            checker = next(db.users.find({'_id': str(user)}))
+            
+            salt = checker['salt'].encode()
+            pwdEncrypt = passwordEncrypt.PasswordEncrypt(password)
+            encodedBytePwd = pwdEncrypt.encodePasswordByte()
+            hashedPwd = pwdEncrypt.generateHash(encodedBytePwd, salt)
+            
+            if checker['password'] == hashedPwd.decode():
+                return return_json('ConfirmKey')
+        except:
+            return return_json("Access Denied")
+    else:
+        return 'LOL'
+
+@app.route('/signup/', methods=['POST'])
 def signup():
     if request.method == 'POST':
-        a = dict(request.get_json())
-        user_id, first, last, email, password = a['userId'], a['fname'], a['lname'], a['email'], a['password']
-        checker = db.users.find({'_id': user_id})
+
+        data = request.get_json()
+        params = data['params']
+        user, first, last, email, password = params.get('user'), params.get('first'), params.get('last'), params.get('email'), params.get('password')
+
         try:
-            existing = next(checker)
-            return 'There is already a user with this username'
+            checker = next(db.users.find({'_id': str(user)}))
+            return return_json("There is already a user with this username")
         except:
-            new_user = {'_id': user_id, 
-                'fname': first, 
-                'lname': last, 
+
+            pwdEncrypt = passwordEncrypt.PasswordEncrypt(password)
+            encodedBytePwd = pwdEncrypt.encodePasswordByte()
+            salt = pwdEncrypt.generateSalt()
+            hashedPwd = pwdEncrypt.generateHash(encodedBytePwd, salt)
+
+            newUser = {
+                '_id': user,
+                'fname': first,
+                'lname': last,
                 'email': email,
-                'password': password, 
-                'projects': []}
-            db.users.insert_one(new_user)
-            return 'ConfirmKey'
-    return 'Only POST Requests are Allowed'
+                'password': hashedPwd.decode(),
+                'salt': salt.decode(),
+                'projects': list()
+            }
+            db.users.insert_one(newUser)
+            return return_json("ConfirmKey")
 
-@app.route('/projects', methods=["GET", "POST"])
-@cross_origin()
+@app.route('/projects/', methods=['POST'])
 def projects():
-    if request.method == 'GET':
-        args = request.args
-        user = args.get('userId')
-        user_spec = db.projects.find({'users': str(user)})
-        all_proj = db.projects.find()
-        return json.dumps({
-            'userProj': [p for p in user_spec],
-            'allProj': [p for p in all_proj]
-        }, indent=4)
-    
-    elif request.method == 'POST':
-        new = dict(request.get_json())
-        user, name, desc = new['user'], new['name'], new['desc']
+    if request.method == 'POST':
+        data = dict(request.get_json())
+        projectName, projectDescription, creator, user = data['projectName'], data['projectDescription'], data['creator'], data['user']
+        # automatically increment project ID
         next_id = db.projects.find_one(sort=[('_id', -1)])['_id'] + 1
-        new_proj = {
-            "_id": next_id,
-            "name": name,
-            "description": desc,
-            "users": [str(user)],
-            "creator": user,
-            "hardware": []
-        }
-        db.users.update_one({"_id": str(user)}, {"$push": {"projects": next_id}})
-        db.projects.insert_one(new_proj)
-        return json.dumps({"message": "Success"}, indent=4)
+        try:
+            newProject = {
+                'name': projectName,
+                'description': projectDescription,
+                'creator': creator,
+                'users': [user],  # Wrap 'users' in a list to make it a list of users
+                '_id': next_id,
+                # added hardware array when creating new project
+                'hardware': []
+            }
+            db.projects.insert_one(newProject)
+            
+            # Update the user's document in the 'users' collection to include the new projectID
+            db.users.update_one(
+                {'_id': creator},  # Use {'_id': creator} instead of {'_id': users'}
+                {'$push': {'projects': next_id}}
+            )
+            
+            return return_json("ConfirmKey")
+        except:
+            return return_json("Error occurred")
 
-@app.route('/joinproject/', methods=['POST'])
-@cross_origin()
+        
+
+@app.route("/join_project/", methods=["POST"])
 def join_project():
     if request.method == 'POST':
-        join = dict(request.get_json())
-        user, project = join['user'], join['project']
-        db.users.update_one({"_id": str(user)}, {"$push": {"projects": project}})
-        db.projects.update_one({"_id": project}, {"$push": {"users": str(user)}})
-        return "Success"
+        data = request.get_json()
+        params = data['params']
+        user = params.get('user')  # Corrected key to 'user'
+        project_id = int(params.get('projectID'))
+        try:
+            project = db.projects.find_one({'_id': project_id})  # Use find_one() instead of find()
 
-@app.route("/hardware/", methods=['GET', 'POST'])
-@cross_origin()
+            if not project:
+                return return_json("Project does not exist")
+            elif user in project['users']:
+                print(project['users'])
+                return return_json("User is already in the project")
+
+            db.projects.update_one(
+                {'_id': project_id},
+                {'$push': {'users': user}}
+            )
+            db.users.update_one(
+                {'_id': user},
+                {'$push': {'projects': project_id}}
+            )
+            return return_json("User successfully joined the project")
+        except:
+            return return_json("Error occurred while joining the project")
+    else:
+        return 'LOL'
+
+@app.route("/get_user_projects/", methods=["POST"])
+def get_user_projects():
+    if request.method == 'POST':
+        data = request.get_json()
+        params = data['params']
+        user = params.get('user')
+        print(user)
+
+        try:
+
+            collection = db.projects
+
+            # Query find in the collection HWSet1
+            result = collection.find({'users':user})
+
+            documents_list = list(result)
+            # print("doc list:", documents_list)
+
+            if (len(documents_list) == 0):
+                return None
+            else:
+                dataTable = []
+                for document in documents_list:
+                    # check if the project has any hardware checked out
+                    rows = {
+                        'id': document['_id'], 
+                        'projectName': document['name'], 
+                        'projectDescription': document['description'], 
+                        # 'hwSet1': document['hardware'][0], 
+                        # 'hwSet2': document['hardware'][1]
+                        }
+                    
+                    dataTable.append(rows)
+
+                # print("dataTable:", dataTable)
+                return dataTable
+        except:
+            return return_json("Error occurred while loading the projects")
+    else:
+        return 'LOL'
+
+@app.route('/hardware/', methods=['GET'])
 def hardware():
-    if request.method == 'POST':
-        req = dict(request.get_json())
-        hwReq, project = req['hwReq'], req['project']
-        for r in hwReq:
-            checker = next(db.hardware.find({'_id': int(r)}))
-            if (checker['capacity'] - checker['checkedOut']) >= int(hwReq[r]):
-                checkout_response = db.hardware.update_one({'_id': int(r)}, {'$inc': {'checkedOut': int(hwReq[r])}})
-                try:
-                    # if the user is adding more hardware to hardware that is already checked out
-                    cur_exists = next(db.projects.find({"hardware.id": int(r)}))
-                    # print("CURRENT EXISTS:", cur_exists)
-                    p_inc = db.projects.update_one({"_id": int(project), "hardware.id": int(r)}, {"$inc": {"hardware.$.amt": hwReq[r]}})
-                    h_inc = db.hardware.update_one({"_id": int(r), "projects.id": int(project)}, {"$inc": {"projects.$.amt": hwReq[r]}})
-                    # print("PROJECTS INCREMENT:", p_inc)
-                    # print("HARDWARE INCREMENT:", h_inc)
-                except:
-                    # first time adding hardware to a project for that particular hardware
-                    p_ins = db.projects.update_one({"_id": int(project)}, {"$push": {"hardware": {"id": int(r), "amt": hwReq[r]}}})
-                    h_ins = db.hardware.update_one({"_id": int(r)}, {"$push": {"projects": {"id": int(project), "amt": hwReq[r]}}})
-                    # print("PROJECT INSERT:", p_ins.raw_result)
-                    # print("HARDWARE INSERT:", h_ins.raw_result)
-                finally:
-                    success = 'True'
-            else:
-                return 'You may not check out more resources than are available. Please re-enter or refresh the page.'
-        return success
-    else:
-        query_res = db.hardware.find()
-        res = []
-        for qr in query_res:
-            res.append(qr)
+    if request.method == 'GET':
+        hw = db.hardware.find()
+        return json.dumps(list(hw))
 
-        return json.dumps(res, indent=4)
-
-@app.route("/hardwareReturn/", methods=["POST"])
-@cross_origin()
-def return_hardware():
+@app.route('/manageHardware/', methods=['POST'])
+def manageHardware():
     if request.method == 'POST':
-        req = (request.get_json())
-        hwRet, project = req['hwReturn'], req['project']
-        for r in hwRet:
-            checker = next(db.hardware.find({'_id': int(r)}))
-            if (int(hwRet[r]) > (checker['capacity'] - (checker['capacity'] - checker['checkedOut']))):
-                return "You may not return more objects than the current capacity"
-            else:
+        # get and set user data from client
+        data = dict(request.get_json())
+        user, req, project, operation = data['user'], data['request'], data['project'], data['operation']
+        print(user)
+        # logic path for returning hardware
+        if operation == 'return':
+            for hw in req:
+                # find the hardware set in database
+                hwset = next(db.hardware.find({'_id': int(hw)}))
+                if (int(req[hw]) > (hwset['capacity'] - (hwset['capacity'] - hwset['checkedOut']))):
+                    return return_json("You may not return more objects than the current availability")
+                # find how many of this particular hardware set have been checked out to this project
+                # find the project and the hardware checked out to it
                 try:
-                    does_exist = next(db.projects.find({"hardware.id": int(r)}))
-                    # print(does_exist)
-                    p_dec = db.projects.update_one({"_id": int(project), "hardware.id": int(r)}, {"$inc": {"hardware.$.amt": -int(hwRet[r])}})
-                    h_dec = db.hardware.update_one({"_id": int(r), "projects.id": int(project)}, {"$inc": {"projects.$.amt": -int(hwRet[r])}})
-                    # print("PROJECT DECREMENT:", p_dec.raw_result)
-                    # print("HARDWARE DECREMENT:", h_dec.raw_result)                    
-                    response = db.hardware.update_one({'_id': int(r)}, {'$inc': {'checkedOut': -int(hwRet[r])}})
+                    proj_hw = next(db.projects.find({'_id': project}))['hardware']
+                    print('proj_hw:', proj_hw)
+                    # iterate through the hardware sets to find the one corresponding to the request
+                    for i in proj_hw:
+                        # print(list(i.keys())[0])
+                        if int(i['id']) == int(hw):
+                            # check if user is returning more hardware than checked out
+                            if int(i['amt']) < int(req[hw]):
+                                return return_json("You may not return more hardware than you have checked out")
+                            else:
+                                # all requirements satisfied so hardware can be returned and all is right in the world
+                                proj_dec = db.projects.update_one({"_id": int(project), "hardware.id": int(hw)}, {"$inc": {"hardware.$.amt": -int(req[hw])}})
+                                hard_dec = db.hardware.update_one({"_id": int(hw), "projects.id": int(project)}, {"$inc": {"projects.$.amt": -int(req[hw])}})
+                                response = db.hardware.update_one({"_id": int(hw)}, {"$inc": {"checkedOut": -int(req[hw])}})
                 except:
-                    # print(does_exist)
-                    return "You must have hardware checked out to check hardware in"
-        return str(response.acknowledged)
-    else:
-        return 'Only POST Requests Allowed'
-            
+                    return return_json("You must have hardware checked out to return hardware.")
+
+            return return_json("Success")
+        
+        # logic path for checking out hardware
+        elif operation == 'request':
+            # iterate through all hardware requests
+            for hw in req:
+                # find hardware set in db
+                hwset = next(db.hardware.find({"_id": int(hw)}))
+                # determine if requested amount is less than or equal to available amount
+                if (hwset['capacity'] - hwset['checkedOut'] >= int(req[hw])):
+                    # determine if project has hardware already checked out - just checking out more
+                    try:
+                        exists_in_project = next(db.projects.find({'hardware.id': int(hw)}))
+                        # increment amount checked out in projects and hardware collection
+                        proj_inc = db.projects.update_one({"_id": int(project), "hardware.id": int(hw)}, {"$inc": {"hardware.$.amt": req[hw]}})
+                        hard_inc = db.hardware.update_one({"_id": int(hw), "projects.id": int(project)}, {"$inc": {"projects.$.amt": req[hw]}})
+
+                    # logic path for project checking out hardware from new hardware set
+                    except:
+                        # push the information to the hardware array on each project document
+                        proj_insert = db.projects.update_one({"_id": int(project)}, {"$push": {"hardware": {"id": int(hw), "amt": req[hw]}}})
+                        hard_insert = db.hardware.update_one({"_id": int(hw)}, {"$push": {"projects": {"id": int(project), "amt": req[hw]}}})
+                    finally:
+                        db.hardware.update_one({"_id": int(hw)}, {"$inc": {"checkedOut": int(req[hw])}})
+                        return return_json("Success")
+                return return_json("You may not check out more resources than are available")
 
 if __name__ == "__main__":
-    app.run(debug=False, port=os.environ.get("PORT", 443))
+    app.run(debug=True)
