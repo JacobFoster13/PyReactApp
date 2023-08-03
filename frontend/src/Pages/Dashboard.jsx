@@ -71,7 +71,7 @@ function Dashboard() {
     projectName: '',
     projectDescription: '',
     projectUsers : [],
-    loginName: state == null? '' : state.userId
+    userId: state == null? '' : state.userId
   });
 
   const [modalIsOpen, setIsOpen] = React.useState(false);
@@ -123,8 +123,8 @@ function Dashboard() {
     axios.post('/projects/', {
         projectName: project.projectName,
         projectDescription: project.projectDescription,
-        creator: project.loginName,
-        user: project.loginName
+        creator: project.userId,
+        user: project.userId
     })
     .then((response) => {
         if (response.status === 200) {

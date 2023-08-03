@@ -37,20 +37,8 @@ function Login() {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalIsOpenSignUp, setIsOpenSignUp] = useState(false);
 
-  function openModal() {
-    setIsOpen(true);
-  }
-
   function openModalSignUp(){
     setIsOpenSignUp(true);
-  }
-
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
-  }
-
-  function afterOpenModalSignUp(){
-    //references
   }
 
   function closeModalSignUp(){
