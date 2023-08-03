@@ -74,14 +74,14 @@ function Hardware() {
                 <div className="row">  
                     <div className='col-md-12'>
                         <div className='row'>
-                            <h2 className='hwSetsHeading'>PROJECT NAME: {state == null? '' : state.projectName}</h2>
-                            <h3 className='hwSetsHeading'>PROJECT ID: {state == null? '' : state.projectId}</h3>
+                            <h2 className='hwSetsHeading'>PROJECT NAME: {state.projectName}</h2>
+                            <h3 className='hwSetsHeading'>PROJECT ID: {state.projectId}</h3>
                         </div>
                         <div className='row'>
                             <div className='hardwareSetContainer'>
                                 <TextField
                                     label='Project Description:'
-                                    value = {state == null? '' : state.projectDescription}
+                                    value = {state.projectDescription}
                                     name='projectDesc'
                                     readOnly
                                     multiline         

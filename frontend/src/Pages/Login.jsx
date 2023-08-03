@@ -81,7 +81,7 @@ function Login() {
     .then((response) => {
       if (response.status === 200) {
         console.log(response.data);
-        if (response.data['Message'] === "Access Denied") {
+        if (response.data['Message'] !== "ConfirmKey") {
           setIsOpen(true);
         } else {
           navigate('/dashboard', { state: { userId: user.userId } });

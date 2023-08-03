@@ -71,7 +71,7 @@ function Dashboard() {
     projectName: '',
     projectDescription: '',
     projectUsers : [],
-    userId: state == null? '' : state.userId
+    userId: state == null ? '' : state.userId
   });
 
   const [modalIsOpen, setIsOpen] = React.useState(false);
@@ -91,7 +91,7 @@ function Dashboard() {
     // Call the API endpoint to join the project using axios
     axios.post('/join_project/', {
       params: {
-        user: state == null ? '' : state.userId, // Replace with the actual user ID
+        user: state.userId, // Replace with the actual user ID
         projectID: project.projectID
       }
     })

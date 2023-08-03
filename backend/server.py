@@ -41,6 +41,8 @@ def login():
             
             if checker['password'] == hashedPwd.decode():
                 return return_json('ConfirmKey')
+            else:
+                return return_json("Incorrect Password")
         except:
             return return_json("Access Denied")
     else:
