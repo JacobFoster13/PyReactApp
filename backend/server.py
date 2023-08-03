@@ -6,7 +6,7 @@ from flask_cors import CORS
 import pymongo
 from dotenv import load_dotenv
 import os
-import passwordEncrypt
+import passwordEncryption as pe
 import certifi
 
 ca=certifi.where()
@@ -16,7 +16,7 @@ DB_STRING = os.getenv("DB_STRING")
 
 app = Flask(__name__)
 client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
-db = client['pythonTest']
+db = client['jacobTest']
 CORS(app)
 
 def return_json(message):
@@ -35,7 +35,7 @@ def login():
             checker = next(db.users.find({'_id': str(user)}))
             
             salt = checker['salt'].encode()
-            pwdEncrypt = passwordEncrypt.PasswordEncrypt(password)
+            pwdEncrypt = pe.PasswordEncrypt(password)
             encodedBytePwd = pwdEncrypt.encodePasswordByte()
             hashedPwd = pwdEncrypt.generateHash(encodedBytePwd, salt)
             
@@ -59,7 +59,7 @@ def signup():
             return return_json("There is already a user with this username")
         except:
 
-            pwdEncrypt = passwordEncrypt.PasswordEncrypt(password)
+            pwdEncrypt = pe.PasswordEncrypt(password)
             encodedBytePwd = pwdEncrypt.encodePasswordByte()
             salt = pwdEncrypt.generateSalt()
             hashedPwd = pwdEncrypt.generateHash(encodedBytePwd, salt)

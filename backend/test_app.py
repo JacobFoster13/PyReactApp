@@ -6,7 +6,7 @@ from server import app, signup
 from dotenv import load_dotenv
 import os
 import certifi
-import passwordEncrypt as e
+import passwordEncryption as e
 import requests
 
 load_dotenv()

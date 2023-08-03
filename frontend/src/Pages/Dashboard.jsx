@@ -49,17 +49,21 @@ function Dashboard() {
   }, [state]);
 
   const columns = [
-    { field: 'id', headerName: 'Project ID', width: 200, 
+    { field: 'id', headerName: 'Project ID', width: 100, 
       renderCell: (params) => 
-      <Link to="/hardwareSets" state= {{projectId: params.row.id,
+      <Link to="/hardware" state= {{projectId: params.row.id,
         userId: state == null? '' : state.userId, projectName:params.row.projectName, projectDescription:params.row.projectDescription}} className="projectLink">
       {params.row.id}
     </Link>
     },
-    { field: 'projectName', headerName: 'Project Name', width: 300 },
-    // commenting out until later
-    // { field: 'hwSet1', headerName: 'Hardware Set 1', width: 150 },
-    // { field: 'hwSet2', headerName: 'Hardware Set 2', width: 150 }
+    { field: 'projectName', headerName: 'Project Name', width: 200 },
+    { field: 'manageProject', headerName: "Manage Project", width: 300, 
+        renderCell: (params) => 
+            <Button
+                variant='contained' 
+                onClick={() => console.log(`clicked, id: ${params.row.id}`)}
+                >Manage Project
+            </Button>}
   ];
 
   const [project, setProject] = useState({
@@ -149,7 +153,7 @@ function Dashboard() {
             <div className="row">  
             <div className='col-md-12'>
                 <div className='row'>
-                <h2 className='projectHeading'>WELCOME TO YOUR PROJECTS DASHBOARD</h2>
+                <h2 className='projectHeading'>WELCOME TO YOUR PROJECTS DASHBOARD, {state.userId}</h2>
                 </div>
                 <div className="row">
                 <div className='col-md-4'>
@@ -181,7 +185,7 @@ function Dashboard() {
                 <br></br>            
                 <div className='row'>
                 <div className='col-md-8 dataTable'>
-                    <DataGrid rows={rows} columns={columns} pageSize={2} />          
+                    <DataGrid rows={rows} columns={columns} pageSize={4} />          
                 </div>              
                 </div>            
                 <div className='row'>

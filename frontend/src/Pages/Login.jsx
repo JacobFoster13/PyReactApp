@@ -26,7 +26,7 @@ const customStyles = {
 
 function Login() {
   const [user, setUserLogin] = useState({
-    loginName: '',
+    userId: '',
     password: '',
     firstName: '',
     lastName: '',
@@ -64,7 +64,7 @@ function Login() {
   function saveLoginDetails () {
     axios.post('/signup/', {
       params: {
-        user: user.loginName,
+        user: user.userId,
         first: user.firstName,
         last: user.lastName,
         email: user.email,
@@ -73,7 +73,12 @@ function Login() {
     })
     .then((response) => {
       if (response.status === 200) {
-        console.log(response.data);
+        if (response.data.Message === 'ConfirmKey') {
+            navigate('/dashboard', { state: { userId: user.userId } });
+        } else {
+            alert(response.data.Message)
+            window.location.reload(false)
+        };
       }
     })
   }
@@ -81,7 +86,7 @@ function Login() {
   function verifyLoginDetails () {
     axios.post('/login/', {
       params: {
-        user: user.loginName,
+        user: user.userId,
         password: user.password
       }
     })
@@ -91,7 +96,7 @@ function Login() {
         if (response.data['Message'] === "Access Denied") {
           setIsOpen(true);
         } else {
-          navigate('/ProjectPage', { state: { userId: user.loginName } });
+          navigate('/dashboard', { state: { userId: user.userId } });
         }
       }
     })
@@ -119,10 +124,10 @@ function Login() {
           </div>
           <div className='row'>
             <TextField
-              label='Login Name'
+              label='User ID'
               required
-              value = {user.loginName}
-              name='loginName'
+              value = {user.userId}
+              name='userId'
               onChange={(e)=> handleChange(e)}                
             />
           </div>
@@ -152,10 +157,10 @@ function Login() {
                   <h4>Please enter below details to create account</h4>
                   <form>
                     <TextField
-                      label='Login Name'
+                      label='User ID'
                       required
-                      value={user.loginName}
-                      name='loginName'
+                      value={user.userId}
+                      name='userId'
                       onChange={(e)=>handleChange(e)}
                     />
                     <TextField
