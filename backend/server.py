@@ -281,9 +281,21 @@ def removeMember():
         proj_res = db.projects.update_one({'_id': project}, {'$pull': {'users': user}})
         user_res = db.users.update_one({"_id": user}, {'$pull': {'projects': project}})
         if proj_res.acknowledged and user_res:
+            return json.dumps({"Message": "ConfirmKey", "user": user})
+        else:
+            return return_json('Error')
+
+@app.route('/makeCreator/', methods=['POST'])
+def makeCreator():
+    if request.method == 'POST':
+        data = dict(request.get_json())
+        new_creator, project = data['newCreator'], data['project']
+        res = db.projects.update_one({"_id": int(project)}, {'$set': {'creator': new_creator}})
+        if res.acknowledged:
             return return_json('ConfirmKey')
         else:
             return return_json('Error')
+
 
 if __name__ == "__main__":
     app.run(debug=True)

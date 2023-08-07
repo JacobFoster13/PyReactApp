@@ -20,13 +20,29 @@ const modalStyle = {
 const Membership = () => {
     let { state } = useLocation()
     let navigate = useNavigate()
+
     const [users, setUsers] = useState([])
     const [creator, setCreator] = useState(false)
     const [open, setOpen] = useState(false)
+    const [creatorOpen, setCreatorOpen] = useState('')
+    const [newCreator, setNewCreator] = useState('')
+    const [verifyCreator, setVerifyCreator] = useState('')
     const [deleteProj, setDeleteProj] = useState('')
 
     const handleCreator = (e) => {
-        console.log(`i want to make ${e.target.value} the new project creator`)
+        if (newCreator === verifyCreator) {
+            setCreatorOpen(false)
+            axios.post('/makeCreator', {
+                newCreator: newCreator,
+                project: state.projectId
+            })
+            .then((response) => {
+                if (response.data.Message === 'ConfirmKey') {
+                    alert('New Creator Set')
+                    window.location.reload(false)
+                }
+            })
+        }
     }
 
     const handleRemove = (e) => {
@@ -47,6 +63,16 @@ const Membership = () => {
 
     const handleLeave = (e) => {
         alert(`I, ${e.target.value}, want to leave this project`)
+        axios.post('/removeMember', {
+            user: e.target.value,
+            project: state.projectId
+        })
+        .then((response) => {
+            if (response.data.Message === 'ConfirmKey') {
+                alert("Successfully left the project")
+                navigate('/dashboard', {state: {userId: response.data.user}})
+            }
+        })
     }
 
     const handleOpen = () => {
@@ -55,6 +81,15 @@ const Membership = () => {
 
     const handleClose = () => {
         setOpen(false)
+    }
+
+    const openCreator = (e) => {
+        setNewCreator(e.target.value)
+        setCreatorOpen(true)
+    }
+
+    const closeCreator = () => {
+        setCreatorOpen(false)
     }
 
     const handleDelete = () => {
@@ -95,13 +130,35 @@ const Membership = () => {
             renderCell: (params) => 
             <>
                 { creator ? 
-                    <Button 
-                        variant='contained'
-                        value={params.row.id}
-                        onClick={handleCreator}
-                        style={{ backgroundColor: 'green' }}>
-                            Make Creator
-                    </Button>
+                    <>
+                        <Button 
+                            variant='contained'
+                            value={params.row.id}
+                            onClick={openCreator}
+                            style={{ backgroundColor: 'green' }}>
+                                Make Creator
+                        </Button>
+                        <Modal
+                                open={creatorOpen}
+                                onClose={closeCreator}
+                            >
+                                <Box sx={modalStyle}>
+                                    <Typography variant='h6'>
+                                        To make this user the creator, you must type their User ID <strong>{newCreator}</strong>
+                                    </Typography>
+                                    <br />
+                                    <form>
+                                        <TextField
+                                            required
+                                            label='User'
+                                            onChange={(e) => setVerifyCreator(e.target.value)}
+                                        />
+                                        <br /><br />
+                                        <Button variant='contained' onClick={handleCreator}>Make Creator</Button>
+                                    </form>
+                                </Box>
+                            </Modal>
+                    </>
                     :
                     <></>
                 }
@@ -167,12 +224,14 @@ const Membership = () => {
                                     <Typography variant='h6'>
                                         To delete this project, you must type the project name <strong>{state.projectName}</strong>
                                     </Typography>
+                                    <br />
                                     <form>
                                         <TextField
                                             required
                                             label='Project Name'
                                             onChange={(e) => setDeleteProj(e.target.value)}
                                         />
+                                        <br /><br />
                                         <Button variant='contained' onClick={handleDelete}>Confirm Delete</Button>
                                     </form>
                                 </Box>
