@@ -32,6 +32,17 @@ const Membership = () => {
     const handleRemove = (e) => {
         let user = e.target.value
         alert(`Remove User: ${user} from Project`)
+        axios.post('/removeMember/', {
+            user: e.target.value,
+            project: state.projectId
+        })
+        .then((response) => {
+            console.log(response.data)
+            if (response.data.Message === 'ConfirmKey') {
+                alert(`User was removed from project`)
+                window.location.reload(false)
+            }
+        })
     }
 
     const handleLeave = (e) => {

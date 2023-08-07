@@ -11,6 +11,7 @@ ca=certifi.where()
 def main():
     # establish connection and create database
     client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
+    # client = pymongo.MongoClient('mongodb://localhost:27017')
     db = client['jacobTest']
 
     # input user data to users collection

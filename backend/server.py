@@ -273,5 +273,17 @@ def membership():
             "isCreator": isCreator
         }, indent=4)
 
+@app.route('/removeMember/', methods=['POST'])
+def removeMember():
+    if request.method == 'POST':
+        data = dict(request.get_json())
+        user, project = data['user'], int(data['project'])
+        proj_res = db.projects.update_one({'_id': project}, {'$pull': {'users': user}})
+        user_res = db.users.update_one({"_id": user}, {'$pull': {'projects': project}})
+        if proj_res.acknowledged and user_res:
+            return return_json('ConfirmKey')
+        else:
+            return return_json('Error')
+
 if __name__ == "__main__":
     app.run(debug=True)
