@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import { TextField } from '@fluentui/react';
 import Button from '@mui/material/Button';
 import Modal from 'react-modal';
+import {Box, Typography, Modal as MuiModal, Grid} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -21,11 +22,28 @@ const customStyles = {
   },
 };
 
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
 function Dashboard() {
 
   const navigate = useNavigate();
   let {state} = useLocation();
   const [rows, setRows] = useState([]);
+
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [manageOpen, setManageOpen] = useState(false)
+  const [manageProjId, setManageProjId] = useState('')
+  const [manageProjName, setManageProjName] = useState('')
 
   useEffect(() => {
     if (state !== null) {
@@ -49,19 +67,31 @@ function Dashboard() {
   }, [state]);
 
   const columns = [
-    { field: 'id', headerName: 'Project ID', width: 100, 
-      renderCell: (params) => 
-      <Link to="/hardware" state= {{projectId: params.row.id,
-        userId: state == null? '' : state.userId, projectName:params.row.projectName, projectDescription:params.row.projectDescription}} className="projectLink">
-      {params.row.id}
-    </Link>
+    { field: 'id', 
+        headerName: 'Project ID', 
+        width: 80, flex: 1, 
+        align: 'center',
+        headerAlign: 'center'
     },
-    { field: 'projectName', headerName: 'Project Name', width: 200 },
-    { field: 'manageProject', headerName: "Manage Project", width: 300, 
+    { field: 'projectName', 
+        headerName: 'Project Name', 
+        width: 200, 
+        flex: 1, 
+        align: 'center',
+        headerAlign: 'center'
+    },
+    { field: 'manageProject', 
+        headerName: "Manage Project", 
+        width: 200, flex: 1,
+        headerAlign: 'center', 
+        align: 'center',
+        sortable: false,
+        filterable: false,
         renderCell: (params) => 
             <Button
+                value={[params.row.id, params.row.projectName]}
                 variant='contained' 
-                onClick={() => console.log(`clicked, id: ${params.row.id}`)}
+                onClick={openManage}
                 >Manage Project
             </Button>}
   ];
@@ -74,17 +104,22 @@ function Dashboard() {
     userId: state == null ? '' : state.userId
   });
 
-  const [modalIsOpen, setIsOpen] = React.useState(false);
-  function openModal() {
-    setIsOpen(true);
+  function openCreateModal() {
+    setCreateOpen(true);
   }
 
-  function afterOpenModal() {
-    // references are now sync'd and can be accessed.
+  function closeCreateModal() {
+    setCreateOpen(false);
   }
 
-  function closeModal() {
-    setIsOpen(false);
+  function openManage (e) {
+    let value = e.target.value.split(",")
+    setManageProjId(value[0])
+    setManageProjName(value[1])
+    setManageOpen(true)
+  }
+  function closeManage () {
+    setManageOpen(false)
   }
 
   function joinProject() {
@@ -170,7 +205,13 @@ function Dashboard() {
                 <div className='col-md-2'>
                     <br></br>
                     <div className='row'>
-                    <Button className='loginButtons' variant='outlined' style={{color:'white', border:'1px solid white'}} onClick={joinProject}>Join Project</Button>              
+                        <Button 
+                            className='loginButtons' 
+                            variant='outlined' 
+                            style={{color:'white', border:'1px solid white'}} 
+                            onClick={joinProject}>
+                                Join Project
+                        </Button>              
                     </div>    
                 </div>   
                 </div>
@@ -178,45 +219,91 @@ function Dashboard() {
                 <div className='col-md-4'>               
                     <br></br>
                     <div style={{marginTop: '1rem'}}>
-                    <Button className='loginButtons' variant='outlined' style={{color:'white', border:'1px solid white'}} onClick={openModal}>Create Project</Button>              
+                        <Button 
+                            className='loginButtons' 
+                            variant='outlined' 
+                            style={{color:'white', border:'1px solid white'}} 
+                            onClick={openCreateModal}>
+                                Create Project
+                        </Button>              
                     </div>                  
                 </div>
                 </div>
                 <br></br>            
                 <div className='row'>
                 <div className='col-md-8 dataTable'>
-                    <DataGrid rows={rows} columns={columns} pageSize={4} />          
+                    <DataGrid 
+                        rows={rows} 
+                        columns={columns} 
+                        pageSize={4}
+                        sx={{width: '100%'}}
+                        columnBuffer={0}
+                    />
+                    <MuiModal
+                        open={manageOpen}
+                        onClose={closeManage}
+                    >
+                        <Box sx={modalStyle}>
+                            <Typography variant='h6'>Choose Action for Project: {manageProjId}</Typography>
+                            <br />
+                            <div>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <Link 
+                                            to="/hardware" 
+                                            state= {{
+                                                projectId: manageProjId,
+                                                userId: state == null? '' : state.userId
+                                                }} 
+                                            className="projectLink">
+                                                <Button variant='outlined'>Manage Resources</Button>
+                                        </Link>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Link 
+                                            to='/manageMembership' 
+                                            state={{
+                                                userId: state.userId, 
+                                                projectId: manageProjId,
+                                                projectName: manageProjName
+                                                }}>
+                                            <Button variant='outlined'>Manage Membership</Button>
+                                        </Link>
+                                    </Grid>
+                                </Grid>
+                            </div>
+                        </Box>
+                    </MuiModal>        
                 </div>              
                 </div>            
                 <div className='row'>
-                <Modal
-                    isOpen={modalIsOpen}
-                    onAfterOpen={afterOpenModal}
-                    onRequestClose={closeModal}
-                    style={customStyles}
-                    contentLabel="Example Modal"
-                >                
-                    <h4>Please enter below details to create a new project</h4>
-                    <form>
-                    <TextField
-                        label='Project Name'
-                        required
-                        value={project.projectName}
-                        name='projectName'
-                        onChange={(e)=>handleChange(e)}
-                    />
-                    <TextField
-                        label='Project Description'
-                        required
-                        multiline
-                        value={project.projectDescription}
-                        name='projectDescription'
-                        onChange={(e)=>handleChange(e)}
-                    />         
-                    <br></br>                          
-                    <Button variant='outlined' onClick={createProject}>Create Project</Button>
-                    </form>
-                </Modal>
+                    <Modal
+                        isOpen={createOpen}
+                        onRequestClose={closeCreateModal}
+                        style={customStyles}
+                        contentLabel="Example Modal"
+                    >                
+                        <h4>Please enter below details to create a new project</h4>
+                        <form>
+                        <TextField
+                            label='Project Name'
+                            required
+                            value={project.projectName}
+                            name='projectName'
+                            onChange={(e)=>handleChange(e)}
+                        />
+                        <TextField
+                            label='Project Description'
+                            required
+                            multiline
+                            value={project.projectDescription}
+                            name='projectDescription'
+                            onChange={(e)=>handleChange(e)}
+                        />         
+                        <br></br>                          
+                        <Button variant='outlined' onClick={createProject}>Create Project</Button>
+                        </form>
+                    </Modal>
                 </div>
             </div>
         </div>

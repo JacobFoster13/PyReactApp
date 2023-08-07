@@ -247,5 +247,31 @@ def manageHardware():
                         return return_json("Success")
                 return return_json("You may not check out more resources than are available")
 
+@app.route('/membership/', methods=['POST'])
+def membership():
+    if request.method == 'POST':
+        data = dict(request.get_json())
+        res = next(db.projects.find({"_id": int(data['project'])}))
+        usersTemp = res['users']
+        userList = []
+
+        for user in usersTemp:
+            if user != res['creator']:
+                userObject = {}
+                u = next(db.users.find({"_id": user}))
+                userObject['id'] = user
+                userObject['name'] = u['fname'] + ' ' + u['lname']
+                userList.append(userObject)
+
+        if data['user'] == res['creator']:
+            isCreator = True
+        else:
+            isCreator = False
+
+        return json.dumps({
+            "users": userList,
+            "isCreator": isCreator
+        }, indent=4)
+
 if __name__ == "__main__":
     app.run(debug=True)
