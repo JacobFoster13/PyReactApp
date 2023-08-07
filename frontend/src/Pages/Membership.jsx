@@ -5,6 +5,7 @@ import {Box, Typography, Modal, Grid} from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+// styling
 const modalStyle = {
     position: 'absolute',
     top: '50%',
@@ -18,9 +19,12 @@ const modalStyle = {
   };
 
 const Membership = () => {
+
+    // hooks
     let { state } = useLocation()
     let navigate = useNavigate()
 
+    // constants
     const [users, setUsers] = useState([])
     const [creator, setCreator] = useState(false)
     const [open, setOpen] = useState(false)
@@ -28,6 +32,86 @@ const Membership = () => {
     const [newCreator, setNewCreator] = useState('')
     const [verifyCreator, setVerifyCreator] = useState('')
     const [deleteProj, setDeleteProj] = useState('')
+    const columns = [
+        { field: 'id', headerName: 'User ID', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'name', headerName: 'Name', align: 'center', headerAlign: 'center', flex: 1 },
+        { field: 'remove', headerName: 'Remove', align: 'center', headerAlign: 'center', flex: 1, sortable: false,
+            renderCell: (params) => 
+            <>
+                { creator ?
+                    <Button 
+                        variant='contained'
+                        value={params.row.id}
+                        onClick={handleRemove}
+                        style={{ backgroundColor: 'red' }}>
+                            Remove
+                    </Button>
+                    :
+                    <Button 
+                        variant='contained'
+                        value={params.row.id}
+                        onClick={handleLeave}
+                        style={{ backgroundColor: 'red' }}>
+                            Leave
+                    </Button>
+                }
+            </>          
+        },
+        { field: 'creator', headerName: 'Make Creator', align: 'center', headerAlign: 'center', flex: 1, sortable: false,
+            renderCell: (params) => 
+            <>
+                { creator ? 
+                    <>
+                        <Button 
+                            variant='contained'
+                            value={params.row.id}
+                            onClick={openCreator}
+                            style={{ backgroundColor: 'green' }}>
+                                Make Creator
+                        </Button>
+                        <Modal
+                                open={creatorOpen}
+                                onClose={closeCreator}
+                            >
+                                <Box sx={modalStyle}>
+                                    <Typography variant='h6'>
+                                        To make this user the creator, you must type their User ID <strong>{newCreator}</strong>
+                                    </Typography>
+                                    <br />
+                                    <form>
+                                        <TextField
+                                            required
+                                            label='User'
+                                            onChange={(e) => setVerifyCreator(e.target.value)}
+                                        />
+                                        <br /><br />
+                                        <Button variant='contained' onClick={handleCreator}>Make Creator</Button>
+                                    </form>
+                                </Box>
+                            </Modal>
+                    </>
+                    :
+                    <></>
+                }
+            </>
+        }
+    ]
+
+    // cutstom functions
+    useEffect(() => {
+        if (state !== null) {
+            axios.post("/membership", {
+                project: state.projectId,
+                user: state.userId
+            })
+            .then((response) => {
+                if (response.status === 200) {
+                    setUsers(response.data.users)
+                    setCreator(response.data.isCreator)
+                }
+            })
+        }
+    }, [state])
 
     const handleCreator = (e) => {
         if (newCreator === verifyCreator) {
@@ -110,86 +194,6 @@ const Membership = () => {
         }
         setOpen(false)
     }
-
-    const columns = [
-        { field: 'id', headerName: 'User ID', align: 'center', headerAlign: 'center', flex: 1 },
-        { field: 'name', headerName: 'Name', align: 'center', headerAlign: 'center', flex: 1 },
-        { field: 'remove', headerName: 'Remove', align: 'center', headerAlign: 'center', flex: 1, sortable: false,
-            renderCell: (params) => 
-            <>
-                { creator ?
-                    <Button 
-                        variant='contained'
-                        value={params.row.id}
-                        onClick={handleRemove}
-                        style={{ backgroundColor: 'red' }}>
-                            Remove
-                    </Button>
-                    :
-                    <Button 
-                        variant='contained'
-                        value={params.row.id}
-                        onClick={handleLeave}
-                        style={{ backgroundColor: 'red' }}>
-                            Leave
-                    </Button>
-                }
-            </>          
-        },
-        { field: 'creator', headerName: 'Make Creator', align: 'center', headerAlign: 'center', flex: 1, sortable: false,
-            renderCell: (params) => 
-            <>
-                { creator ? 
-                    <>
-                        <Button 
-                            variant='contained'
-                            value={params.row.id}
-                            onClick={openCreator}
-                            style={{ backgroundColor: 'green' }}>
-                                Make Creator
-                        </Button>
-                        <Modal
-                                open={creatorOpen}
-                                onClose={closeCreator}
-                            >
-                                <Box sx={modalStyle}>
-                                    <Typography variant='h6'>
-                                        To make this user the creator, you must type their User ID <strong>{newCreator}</strong>
-                                    </Typography>
-                                    <br />
-                                    <form>
-                                        <TextField
-                                            required
-                                            label='User'
-                                            onChange={(e) => setVerifyCreator(e.target.value)}
-                                        />
-                                        <br /><br />
-                                        <Button variant='contained' onClick={handleCreator}>Make Creator</Button>
-                                    </form>
-                                </Box>
-                            </Modal>
-                    </>
-                    :
-                    <></>
-                }
-            </>
-        }
-    ]
-
-    useEffect(() => {
-        if (state !== null) {
-            axios.post("/membership", {
-                project: state.projectId,
-                user: state.userId
-            })
-            .then((response) => {
-                if (response.status === 200) {
-                    setUsers(response.data.users)
-                    setCreator(response.data.isCreator)
-                }
-            })
-        }
-    }, [state])
 
     return (
         <>

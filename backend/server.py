@@ -22,6 +22,9 @@ CORS(app)
 def return_json(message):
     return json.dumps({"Message": str(message)}, indent=4)
 
+# 
+# USER ACCESS FUNCTIONS
+#
 @app.route("/login/", methods=["POST"])
 def login():
     if request.method == 'POST':
@@ -78,6 +81,9 @@ def signup():
             db.users.insert_one(newUser)
             return return_json("ConfirmKey")
 
+#
+# PROJECT FUNCTIONS
+#
 @app.route('/projects/', methods=['POST'])
 def projects():
     if request.method == 'POST':
@@ -106,8 +112,6 @@ def projects():
             return return_json("ConfirmKey")
         except:
             return return_json("Error occurred")
-
-        
 
 @app.route("/join_project/", methods=["POST"])
 def join_project():
@@ -148,15 +152,11 @@ def get_user_projects():
         print(user)
 
         try:
-
             collection = db.projects
-
             # Query find in the collection HWSet1
             result = collection.find({'users':user})
-
             documents_list = list(result)
             # print("doc list:", documents_list)
-
             if (len(documents_list) == 0):
                 return None
             else:
@@ -180,6 +180,9 @@ def get_user_projects():
     else:
         return 'LOL'
 
+#
+# HARDWARE FUNCTIONS
+#
 @app.route('/hardware/', methods=['GET'])
 def hardware():
     if request.method == 'GET':
@@ -250,6 +253,9 @@ def manageHardware():
                     return return_json("You may not check out more resources than are available")
             return return_json("Success")
 
+#
+# MEMBERSHIP FUNCTIONS
+#
 @app.route('/membership/', methods=['POST'])
 def membership():
     if request.method == 'POST':

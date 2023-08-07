@@ -6,13 +6,17 @@ import Button from '@mui/material/Button';
 import {useLocation, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 
-function Hardware() {
+function Hardware () {
+  
+  // hooks
   const navigate = useNavigate();
   let {state} = useLocation();
 
+  // constants
   const [hardware, setHardware] = useState([]);
   let request = {};
 
+  // custom functions
   useEffect(() => {
     if (state !== null) {
       axios.get('/hardware/')
@@ -32,7 +36,7 @@ function Hardware() {
     request[`${id}`] = value
   }
 
-  function checkIn(){
+  function checkIn () {
     axios.post('/manageHardware/', {
         user: state.userId,
         request: request,
@@ -49,7 +53,7 @@ function Hardware() {
     })
   }
 
-  function checkOut(){
+  function checkOut () {
     axios.post('/manageHardware/', {
         user: state.userId,
         request: request,

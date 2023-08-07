@@ -10,7 +10,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-
+// styling
 const customStyles = {
   content: {
     top: '50%',
@@ -34,38 +34,27 @@ const modalStyle = {
     p: 4,
   };
 
+  
+
 function Dashboard() {
 
+  // hooks
   const navigate = useNavigate();
   let {state} = useLocation();
+  
+  // constants
   const [rows, setRows] = useState([]);
-
   const [createOpen, setCreateOpen] = React.useState(false);
   const [manageOpen, setManageOpen] = useState(false)
   const [manageProjId, setManageProjId] = useState('')
   const [manageProjName, setManageProjName] = useState('')
-
-  useEffect(() => {
-    if (state !== null) {
-      // Function to fetch user projects from Flask server
-      const fetchUserProjects = async () => {
-        try {
-          const response = await axios.post('/get_user_projects/', {
-            params: {
-              user: state.userId
-            }
-          });
-          console.log(response.data);
-          setRows(response.data);
-        } catch (error) {
-          console.error('Error fetching user projects:', error);
-        }
-      };
-      // Call the function to fetch user projects when the component mounts
-      fetchUserProjects();
-    }    
-  }, [state]);
-
+  const [project, setProject] = useState({
+    projectsData: [],
+    projectName: '',
+    projectDescription: '',
+    projectUsers : [],
+    userId: state == null ? '' : state.userId
+  });
   const columns = [
     { field: 'id', 
         headerName: 'Project ID', 
@@ -96,13 +85,27 @@ function Dashboard() {
             </Button>}
   ];
 
-  const [project, setProject] = useState({
-    projectsData: [],
-    projectName: '',
-    projectDescription: '',
-    projectUsers : [],
-    userId: state == null ? '' : state.userId
-  });
+  // custom functions
+  useEffect(() => {
+    if (state !== null) {
+      // Function to fetch user projects from Flask server
+      const fetchUserProjects = async () => {
+        try {
+          const response = await axios.post('/get_user_projects/', {
+            params: {
+              user: state.userId
+            }
+          });
+          console.log(response.data);
+          setRows(response.data);
+        } catch (error) {
+          console.error('Error fetching user projects:', error);
+        }
+      };
+      // Call the function to fetch user projects when the component mounts
+      fetchUserProjects();
+    }    
+  }, [state]);
 
   function openCreateModal() {
     setCreateOpen(true);
@@ -118,11 +121,12 @@ function Dashboard() {
     setManageProjName(value[1])
     setManageOpen(true)
   }
+
   function closeManage () {
     setManageOpen(false)
   }
 
-  function joinProject() {
+  function joinProject () {
     // Call the API endpoint to join the project using axios
     axios.post('/join_project/', {
       params: {
@@ -142,7 +146,7 @@ function Dashboard() {
     });
   }
 
-  function createProject(){
+  function createProject () {
     axios.post('/projects/', {
         projectName: project.projectName,
         projectDescription: project.projectDescription,
@@ -160,7 +164,7 @@ function Dashboard() {
     })
   }
 
-  function handleChange(event){
+  function handleChange (event) {
     setProject( prevValues => {
       return { ...prevValues,[event.target.name]: event.target.value}
     });
