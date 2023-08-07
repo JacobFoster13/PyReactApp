@@ -241,7 +241,8 @@ function Dashboard() {
                                             to="/hardware" 
                                             state= {{
                                                 projectId: manageProjId,
-                                                userId: state == null? '' : state.userId
+                                                userId: state == null? '' : state.userId,
+                                                projectName: manageProjName
                                                 }} 
                                             className="projectLink">
                                                 <Button variant='outlined'>Manage Resources</Button>

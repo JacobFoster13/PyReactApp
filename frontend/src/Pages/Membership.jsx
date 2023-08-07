@@ -95,6 +95,16 @@ const Membership = () => {
     const handleDelete = () => {
         if (state.projectName === deleteProj) {
             alert(`${state.projectName} will be deleted`)
+            axios.post('/deleteProject/', {
+                project: state.projectId,
+                users: users
+            })
+            .then((response) => {
+                if (response.data.Message === 'ConfirmKey') {
+                    alert('Project Deleted')
+                    navigate('/dashboard', { state: { userId: state.userId } })
+                }
+            })
         } else {
             alert('Incorrect project name entry')
         }

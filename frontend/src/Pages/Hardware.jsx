@@ -77,17 +77,7 @@ function Hardware() {
                             <h2 className='hwSetsHeading'>PROJECT NAME: {state.projectName}</h2>
                             <h3 className='hwSetsHeading'>PROJECT ID: {state.projectId}</h3>
                         </div>
-                        <div className='row'>
-                            <div className='hardwareSetContainer'>
-                                <TextField
-                                    label='Project Description:'
-                                    value = {state.projectDescription}
-                                    name='projectDesc'
-                                    readOnly
-                                    multiline         
-                                />
-                            </div>
-                        </div>            
+                        <br />         
                     <div className='row'>
                     <div className='col-md-12'>               
                         {hardware.map((item)=>{
@@ -116,7 +106,6 @@ function Hardware() {
                                 <TextField
                                     label='Request'
                                     required
-                                    value = {item.availability}
                                     name='Request'
                                     onChange={(e)=>updateRequest(e, item._id)}      
                                 />

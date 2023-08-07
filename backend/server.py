@@ -203,7 +203,7 @@ def manageHardware():
                 # find how many of this particular hardware set have been checked out to this project
                 # find the project and the hardware checked out to it
                 try:
-                    proj_hw = next(db.projects.find({'_id': project}))['hardware']
+                    proj_hw = next(db.projects.find({'_id': int(project)}))['hardware']
                     print('proj_hw:', proj_hw)
                     # iterate through the hardware sets to find the one corresponding to the request
                     for i in proj_hw:
@@ -225,9 +225,11 @@ def manageHardware():
         # logic path for checking out hardware
         elif operation == 'request':
             # iterate through all hardware requests
+            print("request:", req)
             for hw in req:
                 # find hardware set in db
                 hwset = next(db.hardware.find({"_id": int(hw)}))
+                print("current hwset:", hwset)
                 # determine if requested amount is less than or equal to available amount
                 if (hwset['capacity'] - hwset['checkedOut'] >= int(req[hw])):
                     # determine if project has hardware already checked out - just checking out more
@@ -244,8 +246,9 @@ def manageHardware():
                         hard_insert = db.hardware.update_one({"_id": int(hw)}, {"$push": {"projects": {"id": int(project), "amt": req[hw]}}})
                     finally:
                         db.hardware.update_one({"_id": int(hw)}, {"$inc": {"checkedOut": int(req[hw])}})
-                        return return_json("Success")
-                return return_json("You may not check out more resources than are available")
+                else:
+                    return return_json("You may not check out more resources than are available")
+            return return_json("Success")
 
 @app.route('/membership/', methods=['POST'])
 def membership():
@@ -295,6 +298,28 @@ def makeCreator():
             return return_json('ConfirmKey')
         else:
             return return_json('Error')
+
+@app.route('/deleteProject/', methods=['POST'])
+def deleteProject():
+    if request.method == 'POST':
+        data = dict(request.get_json())
+        project, users = data['project'], data['users']
+        db_project = next(db.projects.find({'_id': int(project)}))
+        # remove the project from all users projects array
+        for user in users:
+            db.users.update_one({'_id': user['id']}, {'$pull':{"projects": int(project)}})
+        
+        # delete the projects from hardware
+        for hw in db_project['hardware']:
+            # get amount from the databasend({'_id': int(hw['id']), 'projects.'}))
+            db.hardware.update_one({'_id': int(hw['id'])}, {'$inc':{'checkedOut': -int(hw['amt'])}})
+            db.hardware.update_one({'_id': int(hw['id'])}, {'$pull':{'projects': {'id': int(project)}}})
+
+        res = db.projects.delete_one({'_id': int(project)})
+        if res.acknowledged:
+            return return_json('ConfirmKey')
+        else:
+            return return_json("Error deleting project")
 
 
 if __name__ == "__main__":
