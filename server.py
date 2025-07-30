@@ -17,13 +17,17 @@ DB_STRING = os.getenv("DB_STRING")
 DB = os.getenv("DB")
 HOST = os.getenv("HOST")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./build', static_url_path='/')
 client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
 db = client[DB]
 CORS(app)
 
 def return_json(message):
     return json.dumps({"Message": str(message)}, indent=4)
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 # 
 # USER ACCESS FUNCTIONS
