@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import { Link } from 'react-router-dom';
 import './../App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { TextField } from '@fluentui/react';
@@ -8,7 +7,7 @@ import Modal from 'react-modal';
 import {Box, Typography, Modal as MuiModal, Grid} from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 // styling
 const customStyles = {
@@ -164,6 +163,12 @@ function Dashboard() {
     })
   }
 
+  const handleLogout = () => {
+    console.log("Handling Log out");
+    sessionStorage.clear();
+    navigate('/login', { replace: true });
+  }
+
   function handleChange (event) {
     setProject( prevValues => {
       return { ...prevValues,[event.target.name]: event.target.value}
@@ -176,131 +181,142 @@ function Dashboard() {
   return (
     <>
       {state !== null ?
-        <div className="container projectContainer">  
-            <div className="row">  
+      <>
+        <div style={{ position: "fixed", top: "10px", right: "10px", zIndex: 9999 }}>
+          <Button onClick={handleLogout} className='hwSetButton' variant='outlined'>Log Out</Button>
+          {/* <Link
+            to="/login"
+            state={null}
+            >
+            <Button onClick={handleLogout} className='hwSetButton' variant='outlined'>Log Out</Button>
+          </Link> */}
+        </div>
+        <div className="container projectContainer" style={{ height: "100vh" }}>  
+          <div className="row">  
             <div className='col-md-12'>
-                <div className='row'>
+              <div className='row'>
                 <h2 className='projectHeading'>WELCOME TO YOUR PROJECTS DASHBOARD, {state.userId}</h2>
-                </div>
-                <div className="row">
+              </div>
+              <div className="row">
                 <div className='col-md-4'>
-                    <div className='row'>
+                  <div className='row'>
                     <TextField
-                        label='Enter Project ID'
-                        required
-                        value = {project.projectID}
-                        name='projectID'
-                        onChange={(e)=> handleChange(e)}                
+                      label='Enter Project ID'
+                      required
+                      value = {project.projectID}
+                      name='projectID'
+                      onChange={(e)=> handleChange(e)}                
                     />
-                    </div>
+                  </div>
                 </div>
                 <div className='col-md-2'>
-                    <br></br>
-                    <div className='row'>
-                        <Button 
-                            className='loginButtons' 
-                            variant='outlined' 
-                            style={{color:'white', border:'1px solid white'}} 
-                            onClick={joinProject}>
-                                Join Project
-                        </Button>              
-                    </div>    
+                  <br></br>
+                  <div className='row'>
+                    <Button 
+                        className='loginButtons' 
+                        variant='outlined' 
+                        style={{color:'white', border:'1px solid white'}} 
+                        onClick={joinProject}>
+                            Join Project
+                    </Button>              
+                  </div>    
                 </div>   
-                </div>
-                <div className='row'>
+              </div>
+              <div className='row'>
                 <div className='col-md-4'>               
-                    <br></br>
-                    <div style={{marginTop: '1rem'}}>
-                        <Button 
-                            className='loginButtons' 
-                            variant='outlined' 
-                            style={{color:'white', border:'1px solid white'}} 
-                            onClick={openCreateModal}>
-                                Create Project
-                        </Button>              
-                    </div>                  
+                  <br></br>
+                  <div style={{marginTop: '1rem'}}>
+                    <Button 
+                        className='loginButtons' 
+                        variant='outlined' 
+                        style={{color:'white', border:'1px solid white'}} 
+                        onClick={openCreateModal}>
+                            Create Project
+                    </Button>              
+                  </div>                  
                 </div>
-                </div>
-                <br></br>            
-                <div className='row'>
+              </div>
+              <br></br>            
+              <div className='row'>
                 <div className='col-md-8 dataTable'>
-                    <DataGrid 
-                        rows={rows} 
-                        columns={columns} 
-                        pageSize={4}
-                        sx={{width: '100%'}}
-                        columnBuffer={0}
+                  <DataGrid 
+                    rows={rows} 
+                    columns={columns} 
+                    pageSize={4}
+                    sx={{width: '100%'}}
+                    columnBuffer={0}
                     />
                     <MuiModal
-                        open={manageOpen}
-                        onClose={closeManage}
+                      open={manageOpen}
+                      onClose={closeManage}
                     >
-                        <Box sx={modalStyle}>
-                            <Typography variant='h6'>Choose Action for Project: {manageProjId}</Typography>
-                            <br />
-                            <div>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <Link 
-                                            to="/hardware" 
-                                            state= {{
-                                                projectId: manageProjId,
-                                                userId: state == null? '' : state.userId,
-                                                projectName: manageProjName
-                                                }} 
-                                            className="projectLink">
-                                                <Button variant='outlined'>Manage Resources</Button>
-                                        </Link>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Link 
-                                            to='/manageMembership' 
-                                            state={{
-                                                userId: state.userId, 
-                                                projectId: manageProjId,
-                                                projectName: manageProjName
-                                                }}>
-                                            <Button variant='outlined'>Manage Membership</Button>
-                                        </Link>
-                                    </Grid>
-                                </Grid>
-                            </div>
-                        </Box>
+                      <Box sx={modalStyle}>
+                        <Typography variant='h6'>Choose Action for Project: {manageProjId}</Typography>
+                        <br />
+                        <div>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                              <Link 
+                                to="/hardware" 
+                                state= {{
+                                    projectId: manageProjId,
+                                    userId: state == null? '' : state.userId,
+                                    projectName: manageProjName
+                                    }} 
+                                className="projectLink">
+                                    <Button variant='outlined'>Manage Resources</Button>
+                              </Link>
+                            </Grid>
+                            <Grid item xs={12}>
+                              <Link 
+                                to='/manageMembership' 
+                                state={{
+                                    userId: state.userId, 
+                                    projectId: manageProjId,
+                                    projectName: manageProjName
+                                    }}>
+                                  <Button variant='outlined'>Manage Membership</Button>
+                                </Link>
+                              </Grid>
+                            </Grid>
+                          </div>
+                      </Box>
                     </MuiModal>        
-                </div>              
+                  </div>              
                 </div>            
                 <div className='row'>
-                    <Modal
-                        isOpen={createOpen}
-                        onRequestClose={closeCreateModal}
-                        style={customStyles}
-                        contentLabel="Example Modal"
-                    >                
-                        <h4>Please enter below details to create a new project</h4>
-                        <form>
-                        <TextField
-                            label='Project Name'
-                            required
-                            value={project.projectName}
-                            name='projectName'
-                            onChange={(e)=>handleChange(e)}
-                        />
-                        <TextField
-                            label='Project Description'
-                            required
-                            multiline
-                            value={project.projectDescription}
-                            name='projectDescription'
-                            onChange={(e)=>handleChange(e)}
-                        />         
-                        <br></br>                          
-                        <Button variant='outlined' onClick={createProject}>Create Project</Button>
-                        </form>
-                    </Modal>
+                  <Modal
+                    isOpen={createOpen}
+                    onRequestClose={closeCreateModal}
+                    style={customStyles}
+                    contentLabel="Example Modal"
+                  >                
+                    <h4>Please enter below details to create a new project</h4>
+                    <form>
+                      <TextField
+                        label='Project Name'
+                        required
+                        value={project.projectName}
+                        name='projectName'
+                        onChange={(e)=>handleChange(e)}
+                      />
+                      <TextField
+                        label='Project Description'
+                        required
+                        multiline
+                        value={project.projectDescription}
+                        name='projectDescription'
+                        onChange={(e)=>handleChange(e)}
+                      />         
+                      <br></br>                          
+                      <Button variant='outlined' onClick={createProject}>Create Project</Button>
+                    </form>
+                  </Modal>
                 </div>
-            </div>
+              </div>
+          </div>
         </div>
-    </div>
+      </>
     :
     <>
         <h2 style={{color: 'white'}}>Please Log In</h2>

@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request
-import json
-from flask_cors import CORS
-import pymongo
-from dotenv import load_dotenv
 import os
-import passwordEncryption as pe
+import json
+import pymongo
 import certifi
+from flask_cors import CORS
+from dotenv import load_dotenv
+import passwordEncryption as pe
+from flask import Flask, request, jsonify
+
 
 ca=certifi.where()
 
 load_dotenv()
 DB_STRING = os.getenv("DB_STRING")
 DB = os.getenv("DB")
+HOST = os.getenv("HOST")
 
 app = Flask(__name__)
 client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
 db = client[DB]
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 def return_json(message):
     return json.dumps({"Message": str(message)}, indent=4)
@@ -127,7 +129,6 @@ def join_project():
             if not project:
                 return return_json("Project does not exist")
             elif user in project['users']:
-                print(project['users'])
                 return return_json("User is already in the project")
 
             db.projects.update_one(
@@ -150,7 +151,6 @@ def get_user_projects():
         data = request.get_json()
         params = data['params']
         user = params.get('user')
-        print(user)
 
         try:
             collection = db.projects
@@ -174,8 +174,7 @@ def get_user_projects():
                     
                     dataTable.append(rows)
 
-                # print("dataTable:", dataTable)
-                return dataTable
+                return jsonify(dataTable)
         except:
             return return_json("Error occurred while loading the projects")
     else:
@@ -196,7 +195,6 @@ def manageHardware():
         # get and set user data from client
         data = dict(request.get_json())
         user, req, project, operation = data['user'], data['request'], data['project'], data['operation']
-        print(user)
         # logic path for returning hardware
         if operation == 'return':
             for hw in req:
@@ -208,7 +206,6 @@ def manageHardware():
                 # find the project and the hardware checked out to it
                 try:
                     proj_hw = next(db.projects.find({'_id': int(project)}))['hardware']
-                    print('proj_hw:', proj_hw)
                     # iterate through the hardware sets to find the one corresponding to the request
                     for i in proj_hw:
                         # print(list(i.keys())[0])
@@ -229,11 +226,9 @@ def manageHardware():
         # logic path for checking out hardware
         elif operation == 'request':
             # iterate through all hardware requests
-            print("request:", req)
             for hw in req:
                 # find hardware set in db
                 hwset = next(db.hardware.find({"_id": int(hw)}))
-                print("current hwset:", hwset)
                 # determine if requested amount is less than or equal to available amount
                 if (hwset['capacity'] - hwset['checkedOut'] >= int(req[hw])):
                     # determine if project has hardware already checked out - just checking out more
@@ -330,4 +325,4 @@ def deleteProject():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host=HOST, port=5050, debug=True)

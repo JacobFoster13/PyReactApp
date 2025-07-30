@@ -27,14 +27,14 @@
     border: 2px solid black;
   }
   .projectContainer{
-    background-color: #0147AB;
+    background-color: #002860;
     background-size: cover;
   }
   .projectLink{
     color: blue !important;
   }
   #root{
-    background-color: #0147AB;
+    background-color: #002860;
     background-size: cover;
   }
   

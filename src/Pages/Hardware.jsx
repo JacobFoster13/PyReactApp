@@ -3,7 +3,7 @@ import './../App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import { TextField } from '@fluentui/react';
 import Button from '@mui/material/Button';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function Hardware () {
@@ -74,7 +74,14 @@ function Hardware () {
     <>
         {
             state !== null ?
-            <div className="container hwSetsContainer">  
+            <div className="container hwSetsContainer" style={{ height: "100vh" }}>  
+                <Link
+                    to="/dashboard"
+                    state={{
+                        userId: state.userId
+                    }}>
+                        <Button className='hwSetButton' variant='outlined'>Home</Button>
+                </Link>
                 <div className="row">  
                     <div className='col-md-12'>
                         <div className='row'>

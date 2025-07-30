@@ -72,13 +72,14 @@ function Login() {
   }
 
   function verifyLoginDetails () {
-    axios.post('/login/', {
+    axios.post('http://localhost:5050/login/', {
       params: {
         user: user.userId,
         password: user.password
       }
     })
     .then((response) => {
+      console.log("Inside Login API call")
       if (response.status === 200) {
         console.log(response.data);
         if (response.data['Message'] !== "ConfirmKey") {
@@ -100,7 +101,7 @@ function Login() {
   }
 
   return (
-    <div className="container loginContainer">
+    <div className="container loginContainer" style={{ height: "100vh"}}>
       <div className="row">  
         <div className='col-md-4'></div>
         <div className='col-md-4 loginScreen'>
