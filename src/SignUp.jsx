@@ -12,7 +12,7 @@ const SignUp = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios.post("/signup/", {
+        axios.post("https://inventory-management-msitm-2d162cb631e2.herokuapp.com/signup/", {
             fname: fName,
             lname: lName,
             userId: userId,

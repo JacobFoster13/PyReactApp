@@ -19,7 +19,7 @@ function Hardware () {
   // custom functions
   useEffect(() => {
     if (state !== null) {
-      axios.get('/hardware/')
+      axios.get('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/hardware/')
       .then((response) => {
         if (response.status === 200) {
             setHardware(response.data)
@@ -37,7 +37,7 @@ function Hardware () {
   }
 
   function checkIn () {
-    axios.post('/manageHardware/', {
+    axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/manageHardware/', {
         user: state.userId,
         request: request,
         project: state.projectId,
@@ -54,7 +54,7 @@ function Hardware () {
   }
 
   function checkOut () {
-    axios.post('/manageHardware/', {
+    axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/manageHardware/', {
         user: state.userId,
         request: request,
         project: state.projectId,

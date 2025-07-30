@@ -50,7 +50,7 @@ function Login() {
   }
 
   function saveLoginDetails () {
-    axios.post('/signup/', {
+    axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/signup/', {
       params: {
         user: user.userId,
         first: user.firstName,
@@ -72,7 +72,7 @@ function Login() {
   }
 
   function verifyLoginDetails () {
-    axios.post('http://localhost:5050/login/', {
+    axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/login/', {
       params: {
         user: user.userId,
         password: user.password

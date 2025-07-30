@@ -100,7 +100,7 @@ const Membership = () => {
     // cutstom functions
     useEffect(() => {
         if (state !== null) {
-            axios.post("/membership", {
+            axios.post("https://inventory-management-msitm-2d162cb631e2.herokuapp.com/membership", {
                 project: state.projectId,
                 user: state.userId
             })
@@ -116,7 +116,7 @@ const Membership = () => {
     const handleCreator = (e) => {
         if (newCreator === verifyCreator) {
             setCreatorOpen(false)
-            axios.post('/makeCreator', {
+            axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/makeCreator', {
                 newCreator: newCreator,
                 project: state.projectId
             })
@@ -132,7 +132,7 @@ const Membership = () => {
     const handleRemove = (e) => {
         let user = e.target.value
         alert(`Remove User: ${user} from Project`)
-        axios.post('/removeMember/', {
+        axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/removeMember/', {
             user: e.target.value,
             project: state.projectId
         })
@@ -147,7 +147,7 @@ const Membership = () => {
 
     const handleLeave = (e) => {
         alert(`I, ${e.target.value}, want to leave this project`)
-        axios.post('/removeMember', {
+        axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/removeMember', {
             user: e.target.value,
             project: state.projectId
         })
@@ -179,7 +179,7 @@ const Membership = () => {
     const handleDelete = () => {
         if (state.projectName === deleteProj) {
             alert(`${state.projectName} will be deleted`)
-            axios.post('/deleteProject/', {
+            axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/deleteProject/', {
                 project: state.projectId,
                 users: users
             })
