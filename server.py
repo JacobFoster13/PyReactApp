@@ -20,7 +20,7 @@ HOST = os.getenv("HOST")
 app = Flask(__name__)
 client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
 db = client[DB]
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 def return_json(message):
     return json.dumps({"Message": str(message)}, indent=4)
@@ -325,4 +325,4 @@ def deleteProject():
 
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=5050, debug=True)
+    app.run(host=HOST, port=os.environ.get("PORT", 443), debug=True)

@@ -184,12 +184,6 @@ function Dashboard() {
       <>
         <div style={{ position: "fixed", top: "10px", right: "10px", zIndex: 9999 }}>
           <Button onClick={handleLogout} className='hwSetButton' variant='outlined'>Log Out</Button>
-          {/* <Link
-            to="/login"
-            state={null}
-            >
-            <Button onClick={handleLogout} className='hwSetButton' variant='outlined'>Log Out</Button>
-          </Link> */}
         </div>
         <div className="container projectContainer" style={{ height: "100vh" }}>  
           <div className="row">  
