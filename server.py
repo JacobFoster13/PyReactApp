@@ -13,10 +13,11 @@ ca=certifi.where()
 
 load_dotenv()
 DB_STRING = os.getenv("DB_STRING")
+DB = os.getenv("DB")
 
 app = Flask(__name__)
 client = pymongo.MongoClient(DB_STRING, tlsCAFile=ca)
-db = client['jacobTest']
+db = client[DB]
 CORS(app)
 
 def return_json(message):

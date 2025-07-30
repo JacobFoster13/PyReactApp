@@ -11,13 +11,14 @@ import requests
 
 load_dotenv()
 DB_STRING = os.getenv("DB_STRING")
+DB = os.getenv("DB")
 
 cert = certifi.where()
 
 # testing database connection and initial set up with query to users collection
 def test_dbConnection():
     test_client = pm.MongoClient(DB_STRING, tlsCAFile=cert)
-    test_db = test_client['pythonTest']    
+    test_db = test_client[DB]    
     res = list(test_db.users.find())
     assert len(res) > 1
 
@@ -38,7 +39,7 @@ def test_login_encryption():
     sPass = 'jacobpwd'
     # establish DB connection
     test_client = pm.MongoClient(DB_STRING, tlsCAFile=cert)
-    test_db = test_client['pythonTest'] 
+    test_db = test_client[DB] 
     # query DB
     test_user = next(test_db.users.find({"_id": 'jf123'}))
     salt, ePass = test_user['salt'], test_user['password']
@@ -64,7 +65,7 @@ def test_create_user():
     key = create_response.json()['Message']
     assert key == 'ConfirmKey'
     test_client = pm.MongoClient(DB_STRING, tlsCAFile=cert)
-    test_db = test_client['pythonTest']
+    test_db = test_client[DB]
     test_db.users.delete_one({"_id": "test123"})
 
 def test_create_project():
