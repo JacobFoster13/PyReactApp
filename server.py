@@ -32,7 +32,7 @@ def index():
 # 
 # USER ACCESS FUNCTIONS
 #
-@app.route("/login/", methods=["POST"])
+@app.route("/login/", methods=["POST", "GET"])
 def login():
     if request.method == 'POST':
 
@@ -56,7 +56,7 @@ def login():
         except:
             return return_json("Access Denied")
     else:
-        return 'LOL'
+        return app.send_static_file('index.html')
 
 @app.route('/signup/', methods=['POST'])
 def signup():

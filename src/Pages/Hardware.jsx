@@ -46,7 +46,8 @@ function Hardware () {
     .then((response) => {
         if (response.data.Message === 'Success') {
             alert("Successfully checked in hardware")
-            window.location.reload(false)
+            navigate("/hardware", { state })
+            // window.location.reload(false)
         } else {
             alert(response.data.Message)
         }
@@ -63,7 +64,8 @@ function Hardware () {
     .then((response) => {
         if (response.data.Message === 'Success') {
             alert("Successfully checked out hardware")
-            window.location.reload(false)
+            navigate("/hardware", { state })
+            // window.location.reload(false)
         } else {
             alert(response.data.Message)
         }

@@ -98,20 +98,24 @@ const Membership = () => {
     ]
 
     // cutstom functions
-    useEffect(() => {
-        if (state !== null) {
-            axios.post("https://inventory-management-msitm-2d162cb631e2.herokuapp.com/membership", {
-                project: state.projectId,
-                user: state.userId
-            })
-            .then((response) => {
-                if (response.status === 200) {
-                    setUsers(response.data.users)
-                    setCreator(response.data.isCreator)
-                }
-            })
+    const fetchMembership = async () => {
+        try {
+        const response = await axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/membership', {
+            project: state.projectId,
+            user: state.userId
+        });
+        if (response.status === 200) {
+            setUsers(response.data.users);
+            setCreator(response.data.isCreator);
         }
-    }, [state])
+        } catch (err) {
+        console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        if (state) fetchMembership();
+    }, [state]);
 
     const handleCreator = (e) => {
         if (newCreator === verifyCreator) {
@@ -123,7 +127,9 @@ const Membership = () => {
             .then((response) => {
                 if (response.data.Message === 'ConfirmKey') {
                     alert('New Creator Set')
-                    window.location.reload(false)
+                    fetchMembership();
+                    // navigate('/manageMembership', { state: { userId: state.userId, projectId: state.projectId, projectName: state.projectName } })
+                    // window.location.reload(false)
                 }
             })
         }
@@ -140,7 +146,9 @@ const Membership = () => {
             console.log(response.data)
             if (response.data.Message === 'ConfirmKey') {
                 alert(`User was removed from project`)
-                window.location.reload(false)
+                fetchMembership();
+                // navigate('/manageMembership', { state: { userId: state.userId, projectId: state.projectId, projectName: state.projectName } })
+                // window.location.reload(false)
             }
         })
     }

@@ -84,23 +84,24 @@ function Dashboard() {
             </Button>}
   ];
 
+// Function to fetch user projects from Flask server
+    const fetchUserProjects = async () => {
+      try {
+        const response = await axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/get_user_projects/', {
+          params: {
+            user: state.userId
+          }
+        });
+        console.log(response.data);
+        setRows(response.data);
+      } catch (error) {
+        console.error('Error fetching user projects:', error);
+      }
+    };
+
   // custom functions
   useEffect(() => {
     if (state !== null) {
-      // Function to fetch user projects from Flask server
-      const fetchUserProjects = async () => {
-        try {
-          const response = await axios.post('https://inventory-management-msitm-2d162cb631e2.herokuapp.com/get_user_projects/', {
-            params: {
-              user: state.userId
-            }
-          });
-          console.log(response.data);
-          setRows(response.data);
-        } catch (error) {
-          console.error('Error fetching user projects:', error);
-        }
-      };
       // Call the function to fetch user projects when the component mounts
       fetchUserProjects();
     }    
@@ -137,7 +138,9 @@ function Dashboard() {
       const data = response.data;
       // Handle the response from the server
       alert(data.Message); // Show a message with the server response
-      window.location.reload(false)
+      fetchUserProjects();
+      // navigate('/dashboard', { state: { userId: state.userId } })
+      // window.location.reload(false)
     })
     .catch(error => {
       console.error('Error joining project:', error);
@@ -158,7 +161,9 @@ function Dashboard() {
             // this needs to be altered to include state if this is the user flow we want to use
             // navigate('/hardwareSets')
             alert('Project successfully created')
-            window.location.reload(false)
+            closeCreateModal();
+            fetchUserProjects();
+            // navigate('/dashboard', { state: { userId: state.userId } })
         }
     })
   }
