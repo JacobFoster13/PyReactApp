@@ -106,7 +106,7 @@ function Login() {
         <div className='col-md-4'></div>
         <div className='col-md-4 loginScreen'>
           <div className='row'>
-            <h3 style={{color: 'white'}}>Sign In to access the APAD Project</h3>
+            <h3 style={{color: 'white'}}>Login or Sign Up to test the app!</h3>
           </div>
           <div className="row">
             <FaCartArrowDown size={100} style={{color: 'white', marginTop:'2rem'}}/>
